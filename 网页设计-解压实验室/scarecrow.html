@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飞镖扎稻草人 · 情绪解压</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            color: #e0e0e0;
+            letter-spacing: 0.5px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        nav {
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            z-index: 100;
+        }
+        nav a {
+            text-decoration: none;
+            color: #ccc;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        nav a:hover, nav a.active {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .draw-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 1rem;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .draw-canvas {
+            background: #fff;
+            border-radius: 12px;
+            cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8' fill='none' stroke='black' stroke-width='2.5'/><circle cx='12' cy='12' r='1' fill='black'/></svg>") 12 12, crosshair;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            flex: 1;
+            width: 100%;
+        }
+        .draw-tools {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .draw-tools button {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .draw-tools button:hover { background: rgba(255,255,255,0.25); }
+        .draw-tools .color-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            cursor: pointer;
+        }
+
+        .target-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 1rem;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .target-canvas {
+            background: #2a2a3e;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            flex: 1;
+            width: 100%;
+            cursor: crosshair;
+        }
+        .target-hint {
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+        .buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        .buttons button {
+            padding: 0.5rem 1.5rem;
+            background: #d68eff;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .buttons button:hover { background: #c06bff; }
+        footer {
+            text-align: center;
+            padding: 0.8rem;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            background: rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">🏠 首页</a>
+        <a href="bubble.html">🫧 泡泡纸</a>
+        <a href="scarecrow.html" class="active">🎯 飞镖稻草人</a>
+        <a href="shredder.html">💥 粉碎机</a>
+        <a href="glass.html">🔨 砸玻璃</a>
+    </nav>
+
+    <div class="main">
+        <div class="draw-panel">
+            <canvas class="draw-canvas" id="drawCanvas"></canvas>
+            <div class="draw-tools">
+                <button id="clearDrawBtn">清空画布</button>
+                <span style="color:#ccc; font-size:0.85rem;">笔刷：</span>
+                <span class="color-dot" style="background:#000;" data-color="#000"></span>
+                <span class="color-dot" style="background:#d63031;" data-color="#d63031"></span>
+                <span class="color-dot" style="background:#0984e3;" data-color="#0984e3"></span>
+                <button id="stickBtn" style="background:#fdcb6e; color:#1a1a2e; font-weight:700;">📌 贴到稻草人脸上</button>
+            </div>
+        </div>
+
+        <div class="target-panel">
+            <canvas class="target-canvas" id="targetCanvas"></canvas>
+            <div class="target-hint">点击画面投掷飞镖，扎中纸条3次才会爆哦！</div>
+            <div class="buttons">
+                <button id="resetTargetBtn">清除所有纸条</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>© 2026 情绪解压实验室 · 课程设计作品</footer>
+
+    <script>
+        function playSound(type) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioCtx.currentTime;
+                if (type === 'dart') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.1);
+                } else if (type === 'hit') {
+                    const bufferSize = audioCtx.sampleRate * 0.2;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+                    }
+                    const source = audioCtx.createBufferSource();
+                    source.buffer = buffer;
+                    const gain = audioCtx.createGain();
+                    gain.gain.setValueAtTime(0.5, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    source.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    source.start();
+                } else if (type === 'cut') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.08);
+                }
+            } catch(e) {}
+        }
+
+        const drawCanvas = document.getElementById('drawCanvas');
+        const ctxDraw = drawCanvas.getContext('2d');
+        let isDrawing = false;
+        let drawColor = '#000';
+
+        function resizeDrawCanvas() {
+            const container = drawCanvas.parentElement;
+            drawCanvas.width = container.clientWidth - 30;
+            drawCanvas.height = container.clientHeight - 70;
+            ctxDraw.fillStyle = '#ffffff';
+            ctxDraw.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+        }
+        window.addEventListener('resize', resizeDrawCanvas);
+        resizeDrawCanvas();
+
+        drawCanvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const rect = drawCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctxDraw.beginPath();
+            ctxDraw.moveTo(x, y);
+        });
+        drawCanvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const rect = drawCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctxDraw.strokeStyle = drawColor;
+            ctxDraw.lineWidth = 4;
+            ctxDraw.lineCap = 'round';
+            ctxDraw.lineTo(x, y);
+            ctxDraw.stroke();
+        });
+        drawCanvas.addEventListener('mouseup', () => { isDrawing = false; });
+        drawCanvas.addEventListener('mouseleave', () => { isDrawing = false; });
+
+        document.getElementById('clearDrawBtn').addEventListener('click', () => {
+            ctxDraw.fillStyle = '#ffffff';
+            ctxDraw.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+        });
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => { drawColor = dot.dataset.color; });
+        });
+
+        const targetCanvas = document.getElementById('targetCanvas');
+        const ctxTarget = targetCanvas.getContext('2d');
+        let targetW, targetH;
+        let dart = null;
+        let papers = [];
+        let tearingPapers = [];
+        let particles = [];
+
+        function resizeTargetCanvas() {
+            const container = targetCanvas.parentElement;
+            targetCanvas.width = container.clientWidth - 30;
+            targetCanvas.height = container.clientHeight - 70;
+            targetW = targetCanvas.width;
+            targetH = targetCanvas.height;
+        }
+        window.addEventListener('resize', resizeTargetCanvas);
+        resizeTargetCanvas();
+
+        function drawScarecrow() {
+            const ctx = ctxTarget;
+            const cx = targetW * 0.5;
+            const cy = targetH * 0.42;
+
+            ctx.strokeStyle = '#5D4037';
+            ctx.lineWidth = 18;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy + 200);
+            ctx.lineTo(cx, cy + 320);
+            ctx.stroke();
+
+            ctx.fillStyle = '#8B7355';
+            ctx.fillRect(cx - 28, cy + 40, 56, 170);
+
+            ctx.fillStyle = '#DEB887';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 80, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#4A3728';
+            ctx.fillRect(cx - 90, cy - 135, 180, 30);
+            ctx.fillRect(cx - 55, cy - 180, 110, 65);
+
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(cx - 30, cy - 20, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(cx + 30, cy - 20, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.arc(cx, cy + 15, 30, 0.1, Math.PI - 0.1);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#8B7355';
+            ctx.lineWidth = 12;
+            ctx.beginPath();
+            ctx.moveTo(cx - 65, cy + 60);
+            ctx.lineTo(cx - 140, cy + 25);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx + 65, cy + 60);
+            ctx.lineTo(cx + 140, cy + 25);
+            ctx.stroke();
+        }
+
+        function addPaper(image) {
+            const cx = targetW * 0.5;
+            const cy = targetH * 0.42;
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 40 + Math.random() * 90;
+            const x = cx + Math.cos(angle) * radius;
+            const y = cy + Math.sin(angle) * radius - 25;
+            const w = 180 + Math.random() * 80;
+            const h = w * 0.7;
+            papers.push({
+                x, y, w, h,
+                rotation: (Math.random() - 0.5) * 0.2,
+                image,
+                hp: 3,
+                flash: 0,
+                cracks: []   //存储固定的锯齿数据
+            });
+        }
+
+        document.getElementById('stickBtn').addEventListener('click', () => {
+            const imgData = drawCanvas.toDataURL();
+            if (imgData === 'data:,') {
+                alert('请先在画板上画点什么吧！');
+                return;
+            }
+            const img = new Image();
+            img.src = imgData;
+            img.onload = () => {
+                addPaper(img);
+            };
+            ctxDraw.fillStyle = '#ffffff';
+            ctxDraw.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+            playSound('hit');
+        });
+
+        document.getElementById('resetTargetBtn').addEventListener('click', () => {
+            papers = [];
+            tearingPapers = [];
+            particles = [];
+        });
+
+        targetCanvas.addEventListener('click', (e) => {
+            if (dart) return;
+            const rect = targetCanvas.getBoundingClientRect();
+            const targetX = e.clientX - rect.left;
+            const targetY = e.clientY - rect.top;
+            dart = {
+                x: targetW + 50,
+                y: Math.random() * targetH * 0.45,
+                targetX,
+                targetY,
+                progress: 0,
+                speed: 0.022
+            };
+            playSound('dart');
+        });
+
+        // 生成一组固定的锯齿偏移量
+        function generateCrackOffsets(startX, startY, endX, endY, segments) {
+            const offsets = [];
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const perpX = -dy / length;
+            const perpY = dx / length;
+            for (let i = 1; i < segments; i++) {
+                // 随机偏移，但保存在数组中
+                const offset = (Math.random() - 0.5) * 18;
+                offsets.push({ t: i / segments, offset });
+            }
+            return offsets;
+        }
+
+        function hitTest(dartX, dartY) {
+            for (let i = papers.length - 1; i >= 0; i--) {
+                const p = papers[i];
+                const dx = dartX - p.x;
+                const dy = dartY - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < Math.sqrt(p.w * p.w + p.h * p.h) * 0.45) {
+                    p.hp--;
+                    p.flash = 10;
+                    if (p.hp <= 0) {
+                        tearingPapers.push(p);
+                        papers.splice(i, 1);
+                        for (let j = 0; j < 18; j++) {
+                            particles.push({
+                                x: dartX,
+                                y: dartY,
+                                vx: (Math.random() - 0.5) * 8,
+                                vy: (Math.random() - 0.5) * 8 - 4,
+                                life: 1,
+                                size: 5 + Math.random() * 7,
+                                color: `hsl(${Math.random() * 360}, 80%, 60%)`
+                            });
+                        }
+                        playSound('hit');
+                    } else {
+                        // 生成并保存锯齿数据
+                        const w = p.w, h = p.h;
+                        if (p.hp === 2) {
+                            // 第一次命中：生成一道裂痕数据
+                            const offsets = generateCrackOffsets(-w * 0.35, -h * 0.45, w * 0.25, h * 0.4, 5);
+                            p.cracks.push({ startX: -w * 0.35, startY: -h * 0.45, endX: w * 0.25, endY: h * 0.4, offsets });
+                        } else if (p.hp === 1) {
+                            // 第二次命中：生成第二道裂痕数据
+                            const offsets = generateCrackOffsets(w * 0.35, -h * 0.45, -w * 0.25, h * 0.4, 4);
+                            p.cracks.push({ startX: w * 0.35, startY: -h * 0.45, endX: -w * 0.25, endY: h * 0.4, offsets });
+                        }
+                        playSound('cut');
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 根据保存的数据绘制锯齿裂缝
+        function drawCracks(ctx, p) {
+            if (!p.cracks || p.cracks.length === 0) return;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
+            ctx.strokeStyle = '#ff3b3b';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            p.cracks.forEach(crack => {
+                ctx.beginPath();
+                ctx.moveTo(crack.startX, crack.startY);
+                const dx = crack.endX - crack.startX;
+                const dy = crack.endY - crack.startY;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const perpX = -dy / length;
+                const perpY = dx / length;
+                crack.offsets.forEach(o => {
+                    const baseX = crack.startX + dx * o.t;
+                    const baseY = crack.startY + dy * o.t;
+                    ctx.lineTo(baseX + perpX * o.offset, baseY + perpY * o.offset);
+                });
+                ctx.lineTo(crack.endX, crack.endY);
+                ctx.stroke();
+            });
+
+            ctx.restore();
+        }
+
+        function animate() {
+            ctxTarget.clearRect(0, 0, targetW, targetH);
+            drawScarecrow();
+
+            papers.forEach(p => {
+                ctxTarget.save();
+                ctxTarget.translate(p.x, p.y);
+                ctxTarget.rotate(p.rotation);
+                if (p.flash > 0) {
+                    ctxTarget.globalAlpha = 0.8;
+                    ctxTarget.fillStyle = '#ffffff';
+                    ctxTarget.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+                    p.flash--;
+                }
+                ctxTarget.drawImage(p.image, -p.w/2, -p.h/2, p.w, p.h);
+                ctxTarget.restore();
+
+                drawCracks(ctxTarget, p);
+            });
+
+            tearingPapers.forEach((p) => {
+                if (p.life === undefined) p.life = 1;
+                p.life -= 0.015;
+                ctxTarget.save();
+                ctxTarget.globalAlpha = p.life;
+                ctxTarget.translate(p.x, p.y);
+                ctxTarget.rotate(p.rotation + p.life * 0.5);
+                ctxTarget.drawImage(p.image, -p.w/2, -p.h/2, p.w, p.h);
+                ctxTarget.restore();
+            });
+            tearingPapers = tearingPapers.filter(p => p.life > 0);
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.12;
+                p.life -= 0.02;
+                ctxTarget.fillStyle = p.color;
+                ctxTarget.globalAlpha = p.life;
+                ctxTarget.beginPath();
+                ctxTarget.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctxTarget.fill();
+            });
+            ctxTarget.globalAlpha = 1;
+            particles = particles.filter(p => p.life > 0);
+
+            if (dart) {
+                dart.progress += dart.speed;
+                if (dart.progress >= 1) {
+                    hitTest(dart.targetX, dart.targetY);
+                    dart = null;
+                } else {
+                    const currentX = dart.x + (dart.targetX - dart.x) * dart.progress;
+                    const currentY = dart.y + (dart.targetY - dart.y) * dart.progress;
+                    ctxTarget.save();
+                    ctxTarget.translate(currentX, currentY);
+                    const angle = Math.atan2(dart.targetY - dart.y, dart.targetX - dart.x);
+                    ctxTarget.rotate(angle);
+                    ctxTarget.fillStyle = '#ff7675';
+                    ctxTarget.beginPath();
+                    ctxTarget.moveTo(18, 0);
+                    ctxTarget.lineTo(-18, -7);
+                    ctxTarget.lineTo(-18, 7);
+                    ctxTarget.closePath();
+                    ctxTarget.fill();
+                    ctxTarget.fillStyle = '#d63031';
+                    ctxTarget.beginPath();
+                    ctxTarget.arc(-18, 0, 6, 0, Math.PI * 2);
+                    ctxTarget.fill();
+                    ctxTarget.restore();
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

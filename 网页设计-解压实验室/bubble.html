@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>烦恼泡泡 · 情绪解压</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1b1b2f, #2d2b4a);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            color: #e0e0e0;
+            letter-spacing: 0.5px;
+            user-select: none;
+        }
+        ::selection { background: transparent; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        nav {
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            z-index: 100;
+        }
+        nav a {
+            text-decoration: none;
+            color: #ccc;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        nav a:hover, nav a.active {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+        }
+
+        .info-bar {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            flex-wrap: wrap;
+        }
+        .counter {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: #ccc;
+            white-space: nowrap;
+        }
+        .progress-bg {
+            width: 180px;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #a18cd1, #fbc2eb);
+            border-radius: 3px;
+            transition: width 0.2s ease;
+        }
+        .reset-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #ddd;
+            padding: 0.4rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+        .reset-btn:hover { background: rgba(255,255,255,0.2); }
+
+        /* 输入区域 */
+        .input-area {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.15);
+            backdrop-filter: blur(15px);
+        }
+        .input-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            width: 100%;
+            max-width: 600px;
+        }
+        .input-area input[type="text"] {
+            flex: 1;
+            padding: 0.7rem 1.2rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s, box-shadow 0.3s;
+            font-family: inherit;
+        }
+        .input-area input[type="text"]:focus {
+            border-color: #d68eff;
+            box-shadow: 0 0 12px rgba(214,142,255,0.3);
+        }
+        .input-area button {
+            padding: 0.7rem 1.8rem;
+            background: #d68eff;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .input-area button:hover { background: #c06bff; }
+        .input-hint {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            font-weight: 300;
+            text-align: center;
+        }
+
+         
+        .radius-control {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-top: 0.2rem;
+        }
+        .radius-control label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            white-space: nowrap;
+        }
+        .radius-control input[type="range"] {
+            width: 100px;
+            cursor: pointer;
+        }
+        .radius-value {
+            font-size: 0.85rem;
+            color: #d68eff;
+            min-width: 40px;
+        }
+
+        
+        .bubble-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            cursor: none; 
+        }
+        
+        .aim-circle {
+            position: absolute;
+            border: 2px dashed rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 20;
+            transform: translate(-50%, -50%);
+            will-change: left, top;
+        }
+
+        .hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255,255,255,0.35);
+            font-size: 1.2rem;
+            font-weight: 300;
+            pointer-events: none;
+            text-align: center;
+            transition: opacity 0.4s;
+        }
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 -5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            font-weight: 500;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+            will-change: left, top;
+        }
+        .bubble span {
+            pointer-events: none;
+            line-height: 1.2;
+            padding: 5px;
+            word-break: break-word;
+        }
+        .bubble.popping {
+            animation: pop 0.3s forwards !important;
+            pointer-events: none;
+        }
+        @keyframes pop {
+            0% { transform: scale(1); filter: brightness(1); }
+            35% { transform: scale(1.2); filter: brightness(1.4); }
+            100% { transform: scale(0); filter: brightness(0.5); opacity: 0; }
+        }
+        .finished-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.6rem;
+            font-weight: 300;
+            color: #fff;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.6s;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 0 0 20px rgba(0,0,0,0.6);
+        }
+        footer {
+            flex-shrink: 0;
+            text-align: center;
+            padding: 0.6rem;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            background: rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">🏠 首页</a>
+        <a href="bubble.html" class="active">🫧 泡泡纸</a>
+        <a href="scarecrow.html">🎯 飞镖稻草人</a>
+        <a href="shredder.html">💥 粉碎机</a>
+        <a href="glass.html">🔨 砸玻璃</a>
+    </nav>
+
+    <div class="info-bar">
+        <span class="counter" id="counter">已捏爆 0 / 50</span>
+        <div class="progress-bg">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <button class="reset-btn" onclick="resetAll()">↻ 重新开始</button>
+    </div>
+
+    <div class="bubble-area" id="bubbleArea">
+        <div class="hint" id="hint">输入最多5个烦恼关键词<br>逗号或空格分隔，一键生成 50 个泡泡 ✨</div>
+        <div class="finished-message" id="finishedMsg">所有烦恼都被你捏爆了<br>今天也是清爽的一天 🌿</div>
+        <div class="aim-circle" id="aimCircle" style="display:none; width:40px; height:40px;"></div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-row">
+            <input type="text" id="worryInput" placeholder="例如：考试 加班 失眠">
+            <button id="addBtn">生成泡泡</button>
+        </div>
+        <div class="input-hint">每个关键词都会变成泡泡，总数 50 个</div>
+        <div class="radius-control">
+            <label for="radiusSlider">🔘 戳击半径</label>
+            <input type="range" id="radiusSlider" min="10" max="80" value="20" step="2">
+            <span class="radius-value" id="radiusValue">20px</span>
+        </div>
+    </div>
+
+    <footer>© 2026 情绪解压实验室 · 课程设计作品</footer>
+
+    <script>
+        // 音效设置 
+        function playPop() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(750, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } catch(e) {}
+        }
+
+        // ---------- DOM ----------
+        const container = document.getElementById('bubbleArea');
+        const counterSpan = document.getElementById('counter');
+        const progressFill = document.getElementById('progressFill');
+        const finishedMsg = document.getElementById('finishedMsg');
+        const hint = document.getElementById('hint');
+        const worryInput = document.getElementById('worryInput');
+        const addBtn = document.getElementById('addBtn');
+        const aimCircle = document.getElementById('aimCircle');
+        const radiusSlider = document.getElementById('radiusSlider');
+        const radiusValue = document.getElementById('radiusValue');
+
+        const BUBBLE_COUNT = 50;
+        let totalBubbles = 0;
+        let poppedCount = 0;
+        let bubbles = [];           
+        let strikeRadius = parseInt(radiusSlider.value); 
+
+        
+        function randomBubbleBg() {
+            const colors = [
+                ['#a18cd1', '#fbc2eb'],
+                ['#a1c4fd', '#c2e9fb'],
+                ['#fddb92', '#d1b7a1'],
+                ['#fbc2eb', '#a6c1ee'],
+                ['#d4fc79', '#96e6a1'],
+                ['#ff9a9e', '#fecfef'],
+            ];
+            const [c1, c2] = colors[Math.floor(Math.random() * colors.length)];
+            return `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9) 5%, ${c1} 60%, ${c2} 100%)`;
+        }
+
+        
+        function createBubble(text) {
+            const size = 55 + Math.random() * 45;
+            const elem = document.createElement('div');
+            elem.className = 'bubble';
+            elem.style.width = size + 'px';
+            elem.style.height = size + 'px';
+            elem.style.background = randomBubbleBg();
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            const fontSize = Math.max(12, size * 0.22);
+            textSpan.style.fontSize = fontSize + 'px';
+            elem.appendChild(textSpan);
+
+            const maxLeft = container.clientWidth - size;
+            const maxTop = container.clientHeight - size;
+            const left = Math.random() * maxLeft;
+            const top = Math.random() * maxTop;
+            elem.style.left = left + 'px';
+            elem.style.top = top + 'px';
+
+            const vx = (Math.random() - 0.5) * 140;
+            const vy = (Math.random() - 0.5) * 140;
+
+            const bubbleObj = { elem, vx, vy, width: size, height: size, dead: false };
+            bubbles.push(bubbleObj);
+            container.appendChild(elem);
+            totalBubbles++;
+            updateUI();
+            hint.style.opacity = '0';
+        }
+
+        
+        function popBubble(bubbleObj) {
+            if (bubbleObj.dead) return;
+            bubbleObj.dead = true;
+            bubbleObj.elem.classList.add('popping');
+            playPop();
+            poppedCount++;
+            updateUI();
+            bubbleObj.elem.addEventListener('animationend', () => {
+                if (bubbleObj.elem.parentNode) bubbleObj.elem.remove();
+                bubbles = bubbles.filter(b => b !== bubbleObj);
+                if (bubbles.length === 0 && poppedCount >= BUBBLE_COUNT) {
+                    showFinished();
+                }
+            });
+        }
+
+        function updateUI() {
+            counterSpan.textContent = `已捏爆 ${poppedCount} / ${totalBubbles}`;
+            const percent = totalBubbles === 0 ? 0 : (poppedCount / totalBubbles) * 100;
+            progressFill.style.width = percent + '%';
+        }
+
+        function showFinished() {
+            finishedMsg.style.opacity = 1;
+            setTimeout(() => { finishedMsg.style.opacity = 0; }, 4000);
+        }
+
+        function clearAllBubbles() {
+            bubbles.forEach(b => { if (b.elem.parentNode) b.elem.remove(); });
+            bubbles = [];
+            totalBubbles = 0;
+            poppedCount = 0;
+            updateUI();
+            finishedMsg.style.opacity = 0;
+            hint.style.opacity = '1';
+        }
+
+        function resetAll() {
+            clearAllBubbles();
+            worryInput.value = '';
+        }
+
+  
+        function getBubbleCenter(bubbleObj) {
+            const left = parseFloat(bubbleObj.elem.style.left);
+            const top = parseFloat(bubbleObj.elem.style.top);
+            return {
+                x: left + bubbleObj.width / 2,
+                y: top + bubbleObj.height / 2
+            };
+        }
+
+  
+        function onContainerClick(e) {
+            if (bubbles.length === 0) return;
+            const rect = container.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const toPop = [];
+            for (const b of bubbles) {
+                if (b.dead) continue;
+                const center = getBubbleCenter(b);
+                const dx = mouseX - center.x;
+                const dy = mouseY - center.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+          
+                if (dist <= (b.width / 2) + strikeRadius) {
+                    toPop.push(b);
+                }
+            }
+            
+            if (toPop.length > 0) {
+               
+                playPop();
+                toPop.forEach(b => popBubbleSilent(b));
+            }
+        }
+
+       
+        function popBubbleSilent(bubbleObj) {
+            if (bubbleObj.dead) return;
+            bubbleObj.dead = true;
+            bubbleObj.elem.classList.add('popping');
+            poppedCount++;
+            updateUI();
+            bubbleObj.elem.addEventListener('animationend', () => {
+                if (bubbleObj.elem.parentNode) bubbleObj.elem.remove();
+                bubbles = bubbles.filter(b => b !== bubbleObj);
+                if (bubbles.length === 0 && poppedCount >= BUBBLE_COUNT) {
+                    showFinished();
+                }
+            });
+        }
+
+
+        function updateAimCircle(e) {
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            aimCircle.style.left = x + 'px';
+            aimCircle.style.top = y + 'px';
+            const diameter = strikeRadius * 2;
+            aimCircle.style.width = diameter + 'px';
+            aimCircle.style.height = diameter + 'px';
+        }
+
+ 
+        container.addEventListener('mouseenter', () => {
+            aimCircle.style.display = 'block';
+        });
+        container.addEventListener('mouseleave', () => {
+            aimCircle.style.display = 'none';
+        });
+        container.addEventListener('mousemove', (e) => {
+            updateAimCircle(e);
+        });
+
+        radiusSlider.addEventListener('input', () => {
+            strikeRadius = parseInt(radiusSlider.value);
+            radiusValue.textContent = strikeRadius + 'px';
+         
+            if (aimCircle.style.display !== 'none') {
+                const diameter = strikeRadius * 2;
+                aimCircle.style.width = diameter + 'px';
+                aimCircle.style.height = diameter + 'px';
+            }
+        });
+
+        container.addEventListener('click', onContainerClick);
+
+       
+        function generateBubbles() {
+            const rawText = worryInput.value.trim();
+            if (!rawText) {
+                worryInput.placeholder = '写点什么吧~';
+                worryInput.focus();
+                return;
+            }
+            const keywords = rawText.split(/[,，、\s]+/).filter(s => s.length > 0);
+            const finalKeywords = keywords.slice(0, 5);
+            if (finalKeywords.length === 0) return;
+
+            clearAllBubbles();
+            for (let i = 0; i < BUBBLE_COUNT; i++) {
+                const keyword = finalKeywords[i % finalKeywords.length];
+                createBubble(keyword);
+            }
+            hint.style.opacity = '0';
+            worryInput.value = '';
+            worryInput.placeholder = '再次输入烦恼...';
+        }
+
+        addBtn.addEventListener('click', generateBubbles);
+        worryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') generateBubbles();
+        });
+
+        //动画循环 
+        let lastTime = performance.now();
+        function animate(time) {
+            const dt = Math.min((time - lastTime) / 1000, 0.1);
+            lastTime = time;
+            for (const b of bubbles) {
+                if (b.dead) continue;
+                let left = parseFloat(b.elem.style.left);
+                let top = parseFloat(b.elem.style.top);
+                left += b.vx * dt;
+                top += b.vy * dt;
+                const maxLeft = container.clientWidth - b.width;
+                const maxTop = container.clientHeight - b.height;
+                if (left < 0) { left = 0; b.vx = -b.vx; }
+                if (left > maxLeft) { left = maxLeft; b.vx = -b.vx; }
+                if (top < 0) { top = 0; b.vy = -b.vy; }
+                if (top > maxTop) { top = maxTop; b.vy = -b.vy; }
+                b.elem.style.left = left + 'px';
+                b.elem.style.top = top + 'px';
+            }
+            requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

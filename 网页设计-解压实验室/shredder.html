@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>烦恼粉碎机 · 情绪解压</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1e1e30, #2a1a2e);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #e0e0e0;
+            letter-spacing: 0.5px;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        nav {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+        nav a {
+            text-decoration: none;
+            color: #ccc;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        nav a:hover, nav a.active {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+        }
+        h1 { font-weight: 300; font-size: 2.2rem; margin-bottom: 0.3rem; }
+
+        .flash {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255,255,255,0.4);
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.08s;
+        }
+        .flash.active { opacity: 1; transition: opacity 0s; }
+
+        .shake-active {
+            animation: bigShake 0.5s ease-in-out;
+        }
+        @keyframes bigShake {
+            0%,100% { transform: translateX(0); }
+            10% { transform: translateX(-16px) rotate(-1.5deg); }
+            30% { transform: translateX(16px) rotate(1.5deg); }
+            50% { transform: translateX(-12px) rotate(-0.8deg); }
+            70% { transform: translateX(12px) rotate(0.8deg); }
+            90% { transform: translateX(-5px); }
+        }
+
+        .input-area {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 1.8rem;
+            width: 100%;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-shrink: 0;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 1rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            font-size: 1.1rem;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            resize: vertical;
+            outline: none;
+            font-family: inherit;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+        textarea:focus {
+            border-color: #d68eff;
+            box-shadow: 0 0 20px rgba(214,142,255,0.4);
+        }
+        .shred-btn {
+            align-self: center;
+            padding: 0.9rem 3rem;
+            background: #d68eff;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 35px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            transition: all 0.2s;
+            box-shadow: 0 8px 25px rgba(214,142,255,0.5);
+        }
+        .shred-btn:hover {
+            background: #c06bff;
+            transform: scale(1.03);
+            box-shadow: 0 10px 30px rgba(214,142,255,0.7);
+        }
+        .shred-btn:active { transform: scale(0.94); }
+
+        .particle-stage {
+            flex: 1;
+            width: 100%;
+            min-height: 60vh;
+            position: relative;
+            overflow: visible;
+            pointer-events: none;
+        }
+
+        .small-text {
+            position: absolute;
+            font-weight: 700;
+            text-shadow: 0 0 10px currentColor;
+            white-space: nowrap;
+            animation: popIn 0.2s ease-out;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .particle {
+            position: absolute;
+            font-weight: 700;
+            white-space: nowrap;
+            text-shadow: 0 0 20px currentColor;
+            animation: explode 2s forwards;
+            will-change: transform, opacity;
+        }
+        @keyframes explode {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1.3);
+                opacity: 1;
+                font-size: 2.2rem;
+            }
+            25% {
+                opacity: 1;
+                transform: translate(var(--x25), var(--y25)) rotate(var(--r25)) scale(1.1);
+            }
+            100% {
+                transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0.15);
+                opacity: 0;
+                font-size: 0.1rem;
+            }
+        }
+
+        .shard {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            box-shadow: 0 0 15px currentColor;
+            animation: shardExplode 1.8s forwards;
+        }
+        @keyframes shardExplode {
+            0% { transform: translate(0,0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
+        }
+
+        .message {
+            margin-top: 0.5rem;
+            color: #b8b0d8;
+            font-weight: 300;
+            min-height: 2rem;
+            text-align: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            color: rgba(255,255,255,0.3);
+            width: 100%;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .firework-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .firework-particle {
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 0 10px currentColor;
+            animation: fireworkFly 1.8s forwards ease-out;
+        }
+        @keyframes fireworkFly {
+            0% { transform: translate(var(--startX), var(--startY)) scale(0.3); opacity: 0; }
+            10% { opacity: 1; transform: translate(var(--startX), var(--startY)) scale(1); }
+            100% { transform: translate(var(--endX), var(--endY)) scale(0); opacity: 0; }
+        }
+        .firework-trail {
+            position: absolute;
+            width: 3px;
+            height: 20px;
+            background: currentColor;
+            border-radius: 2px;
+            opacity: 0.7;
+            transform-origin: center bottom;
+            animation: trailFly 1.8s forwards ease-out;
+        }
+        @keyframes trailFly {
+            0% { transform: translate(var(--startX), var(--startY)) rotate(var(--angle)) scaleY(0.2); opacity: 0; }
+            10% { opacity: 0.8; transform: translate(var(--startX), var(--startY)) rotate(var(--angle)) scaleY(1); }
+            100% { transform: translate(var(--endX), var(--endY)) rotate(var(--angle)) scaleY(0); opacity: 0; }
+        }
+
+        /* 祝贺区块 - 在粒子舞台内部绝对居中 */
+        .congrats-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2.5rem;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .congrats-wrapper.show { opacity: 1; }
+        .congrats-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 30px #d68eff, 0 0 60px #a18cd1;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .again-btn {
+            pointer-events: auto;
+            cursor: pointer;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 0.7rem 2rem;
+            border-radius: 30px;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .again-btn:hover {
+            background: rgba(255,255,255,0.25);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            transform: translateY(-2px);
+        }
+        .again-btn:active { transform: scale(0.96); }
+    </style>
+</head>
+<body>
+    <div class="flash" id="flash"></div>
+    <nav>
+        <a href="index.html">🏠 首页</a>
+        <a href="bubble.html">🫧 泡泡纸</a>
+        <a href="scarecrow.html">🎯 飞镖稻草人</a>
+        <a href="shredder.html" class="active">💥 粉碎机</a>
+        <a href="glass.html">🔨 砸玻璃</a>
+    </nav>
+
+    <div class="container">
+        <h1>💥 烦恼粉碎机</h1>
+        <div class="input-area">
+            <textarea id="worryInput" placeholder="写下你的烦恼..."></textarea>
+            <button class="shred-btn" id="shredBtn">粉 碎 它</button>
+        </div>
+        <div class="particle-stage" id="particleStage"></div>
+        <div class="message" id="message"></div>
+    </div>
+
+    <footer>© 2026 情绪解压实验室 · 课程设计作品</footer>
+
+    <div class="firework-container" id="fireworkContainer"></div>
+
+    <script>
+        function playShredSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioCtx.currentTime;
+                const bufferSize = audioCtx.sampleRate * 0.5;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.5);
+                }
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.8, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                source.connect(gain);
+                gain.connect(audioCtx.destination);
+                source.start();
+
+                const osc = audioCtx.createOscillator();
+                const boomGain = audioCtx.createGain();
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.4);
+                boomGain.gain.setValueAtTime(0.6, now);
+                boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc.connect(boomGain);
+                boomGain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(now + 0.4);
+            } catch(e) {}
+        }
+
+        const worryInput = document.getElementById('worryInput');
+        const shredBtn = document.getElementById('shredBtn');
+        const particleStage = document.getElementById('particleStage');
+        const messageEl = document.getElementById('message');
+        const flash = document.getElementById('flash');
+        const body = document.body;
+        const fireworkContainer = document.getElementById('fireworkContainer');
+
+        let currentWorry = '';
+
+        function spawnSideFireworks() {
+            const sideParticles = 60;
+            const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd', '#01a3a4', '#f368e0'];
+            
+            for (let i = 0; i < sideParticles; i++) {
+                const isLeft = i < sideParticles / 2;
+                const startX = isLeft ? 0 : window.innerWidth;
+                const startY = Math.random() * window.innerHeight;
+                const endX = window.innerWidth * (0.2 + Math.random() * 0.6);
+                const endY = window.innerHeight * (0.1 + Math.random() * 0.8);
+                
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const size = 4 + Math.random() * 8;
+
+                const particle = document.createElement('div');
+                particle.className = 'firework-particle';
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.backgroundColor = color;
+                particle.style.color = color;
+                particle.style.setProperty('--startX', startX + 'px');
+                particle.style.setProperty('--startY', startY + 'px');
+                particle.style.setProperty('--endX', endX + 'px');
+                particle.style.setProperty('--endY', endY + 'px');
+                particle.style.animationDelay = Math.random() * 0.15 + 's';
+                fireworkContainer.appendChild(particle);
+
+                if (Math.random() > 0.5) {
+                    const trail = document.createElement('div');
+                    trail.className = 'firework-trail';
+                    trail.style.color = color;
+                    trail.style.setProperty('--startX', startX + 'px');
+                    trail.style.setProperty('--startY', startY + 'px');
+                    trail.style.setProperty('--endX', endX + 'px');
+                    trail.style.setProperty('--endY', endY + 'px');
+                    trail.style.setProperty('--angle', Math.atan2(endY - startY, endX - startX) * (180 / Math.PI) + 'deg');
+                    trail.style.animationDelay = Math.random() * 0.15 + 's';
+                    fireworkContainer.appendChild(trail);
+                }
+
+                setTimeout(() => { particle.remove(); }, 2000);
+            }
+        }
+
+        function showCongrats(text) {
+            // 移除可能已存在的祝贺区块
+            const existing = particleStage.querySelector('.congrats-wrapper');
+            if (existing) existing.remove();
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'congrats-wrapper';
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'congrats-text';
+            textDiv.textContent = '所有烦恼都被粉碎，今天也要闪闪发光 ✨';
+            
+            const againBtn = document.createElement('button');
+            againBtn.className = 'again-btn';
+            againBtn.textContent = '再来一次';
+            
+            wrapper.appendChild(textDiv);
+            wrapper.appendChild(againBtn);
+            particleStage.appendChild(wrapper);
+            
+            requestAnimationFrame(() => {
+                wrapper.classList.add('show');
+            });
+
+            againBtn.addEventListener('click', () => {
+                wrapper.classList.remove('show');
+                wrapper.addEventListener('transitionend', () => {
+                    if (wrapper.parentNode) wrapper.remove();
+                });
+                setTimeout(() => { if (wrapper.parentNode) wrapper.remove(); }, 600);
+                
+                worryInput.value = text;
+                shred();
+            });
+
+            setTimeout(() => {
+                if (wrapper.parentNode) {
+                    wrapper.classList.remove('show');
+                    wrapper.addEventListener('transitionend', () => {
+                        if (wrapper.parentNode) wrapper.remove();
+                    });
+                    setTimeout(() => { if (wrapper.parentNode) wrapper.remove(); }, 600);
+                }
+            }, 5000);
+        }
+
+        function shred() {
+            const text = worryInput.value.trim();
+            if (!text) {
+                messageEl.textContent = '写点什么再粉碎吧 ✍️';
+                return;
+            }
+            currentWorry = text;
+            messageEl.textContent = '';
+            particleStage.innerHTML = '';
+            fireworkContainer.innerHTML = '';
+
+            const stageRect = particleStage.getBoundingClientRect();
+            const stageW = stageRect.width;
+            const stageH = stageRect.height;
+
+            const repeatCount = 30;
+            const smallTexts = [];
+
+            for (let i = 0; i < repeatCount; i++) {
+                const span = document.createElement('span');
+                span.className = 'small-text';
+                span.textContent = text;
+                span.style.color = `hsl(${Math.random() * 360}, 85%, 75%)`;
+                span.style.fontSize = (1.2 + Math.random() * 2) + 'rem';
+                span.style.transform = `rotate(${(Math.random() - 0.5) * 40}deg)`;
+                const left = 20 + Math.random() * (stageW - 40);
+                const top = 20 + Math.random() * (stageH - 40);
+                span.style.left = left + 'px';
+                span.style.top = top + 'px';
+                particleStage.appendChild(span);
+
+                const spanRect = span.getBoundingClientRect();
+                const cx = spanRect.left + spanRect.width / 2 - stageRect.left;
+                const cy = spanRect.top + spanRect.height / 2 - stageRect.top;
+                smallTexts.push({ elem: span, cx, cy, text: text });
+            }
+
+            playShredSound();
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 120);
+            body.classList.remove('shake-active');
+            void body.offsetWidth;
+            body.classList.add('shake-active');
+            shredBtn.style.transform = 'scale(0.9)';
+            setTimeout(() => { shredBtn.style.transform = ''; }, 150);
+
+            setTimeout(() => {
+                smallTexts.forEach(item => item.elem.remove());
+
+                flash.classList.add('active');
+                setTimeout(() => flash.classList.remove('active'), 120);
+                body.classList.remove('shake-active');
+                void body.offsetWidth;
+                body.classList.add('shake-active');
+                playShredSound();
+
+                spawnSideFireworks();
+
+                const allParticles = [];
+                smallTexts.forEach(item => {
+                    const chars = item.text.split('');
+                    chars.forEach(char => {
+                        allParticles.push({ char, cx: item.cx, cy: item.cy });
+                    });
+                });
+
+                allParticles.forEach((p, idx) => {
+                    const span = document.createElement('span');
+                    span.className = 'particle';
+                    span.textContent = p.char;
+                    span.style.left = p.cx + 'px';
+                    span.style.top = p.cy + 'px';
+                    span.style.color = `hsl(${Math.random() * 360}, 90%, 80%)`;
+                    const angle = Math.random() * 2 * Math.PI;
+                    const dist = 100 + Math.random() * 350;
+                    const x = Math.cos(angle) * dist;
+                    const y = Math.sin(angle) * dist;
+                    const r = (Math.random() - 0.5) * 1500;
+                    span.style.setProperty('--x', x + 'px');
+                    span.style.setProperty('--y', y + 'px');
+                    span.style.setProperty('--r', r + 'deg');
+                    span.style.setProperty('--x25', (x * 0.3) + 'px');
+                    span.style.setProperty('--y25', (y * 0.3) + 'px');
+                    span.style.setProperty('--r25', (r * 0.3) + 'deg');
+                    span.style.animationDelay = (idx * 0.006) + 's';
+                    particleStage.appendChild(span);
+                });
+
+                for (let i = 0; i < 40; i++) {
+                    const shard = document.createElement('div');
+                    shard.className = 'shard';
+                    const randomText = smallTexts[Math.floor(Math.random() * smallTexts.length)];
+                    shard.style.left = randomText.cx + 'px';
+                    shard.style.top = randomText.cy + 'px';
+                    const angle = Math.random() * 2 * Math.PI;
+                    const dist = 80 + Math.random() * 280;
+                    shard.style.setProperty('--sx', Math.cos(angle) * dist + 'px');
+                    shard.style.setProperty('--sy', Math.sin(angle) * dist + 'px');
+                    const color = `hsl(${Math.random() * 360}, 90%, 70%)`;
+                    shard.style.backgroundColor = color;
+                    shard.style.color = color;
+                    shard.style.boxShadow = `0 0 18px ${color}`;
+                    shard.style.animationDelay = (i * 0.008) + 's';
+                    particleStage.appendChild(shard);
+                }
+
+                setTimeout(() => {
+                    showCongrats(currentWorry);
+                }, 1600);
+
+            }, 800);
+
+            worryInput.value = '';
+        }
+
+        shredBtn.addEventListener('click', shred);
+        worryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                shred();
+            }
+        });
+    </script>
+</body>
+</html>

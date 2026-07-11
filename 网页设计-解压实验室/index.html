@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情绪解压实验室</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: #e0e0e0;
+            letter-spacing: 0.5px;
+            line-height: 1.6;
+        }
+        ::selection { background: rgba(255,255,255,0.2); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+
+        nav {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        nav a {
+            text-decoration: none;
+            color: #ccc;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+        }
+        nav a:hover, nav a.active {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+        }
+        .hero {
+            text-align: center;
+            padding: 5rem 2rem 2rem;
+        }
+        .hero h1 {
+            font-size: 3.2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.6);
+            font-weight: 300;
+        }
+        .tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto 3rem;
+        }
+        .tool-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            color: #ddd;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s forwards;
+        }
+        .tool-card:nth-child(1) { animation-delay: 0.1s; }
+        .tool-card:nth-child(2) { animation-delay: 0.2s; }
+        .tool-card:nth-child(3) { animation-delay: 0.3s; }
+        .tool-card:nth-child(4) { animation-delay: 0.4s; }
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tool-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+        .tool-card .icon { font-size: 2.8rem; margin-bottom: 0.8rem; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); }
+        .tool-card h2 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .tool-card p { color: rgba(255,255,255,0.5); font-size: 0.9rem; font-weight: 300; }
+        .emotion-check {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 30px;
+            max-width: 500px;
+            margin: 0 auto 3rem;
+        }
+        .emotion-check h3 { font-weight: 400; color: rgba(255,255,255,0.7); margin-bottom: 1rem; }
+        .emotion-check .emojis { font-size: 2.5rem; display: flex; justify-content: center; gap: 1.5rem; margin: 1rem 0; }
+        .emotion-check .emojis span {
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: inline-block;
+        }
+        .emotion-check .emojis span:hover { transform: scale(1.3) rotate(10deg); }
+        .emotion-check .emojis span:active { transform: scale(0.9); }
+        .suggestion {
+            margin-top: 1rem;
+            font-style: italic;
+            color: #b8b0d8;
+            min-height: 2rem;
+            font-weight: 300;
+            transition: all 0.3s;
+        }
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            font-weight: 300;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="active">🏠 首页</a>
+        <a href="bubble.html">🫧 泡泡纸</a>
+        <a href="scarecrow.html">🎯 飞镖稻草人</a>
+        <a href="shredder.html">💥 粉碎机</a>
+        <a href="glass.html">🔨 砸玻璃</a>
+    </nav>
+
+    <div class="hero">
+        <h1>情绪解压实验室</h1>
+        <p>选一个工具，给心情放个假</p>
+    </div>
+
+    <div class="tools">
+        <a href="bubble.html" class="tool-card">
+            <div class="icon">🫧</div>
+            <h2>泡泡纸</h2>
+            <p>捏爆彩色泡泡，听那清脆的声音</p>
+        </a>
+        <a href="scarecrow.html" class="tool-card">
+            <div class="icon">🎯</div>
+            <h2>飞镖稻草人</h2>
+            <p>画出烦恼贴上去，再扔飞镖扎个痛快</p>
+        </a>
+        <a href="shredder.html" class="tool-card">
+            <div class="icon">💥</div>
+            <h2>烦恼粉碎机</h2>
+            <p>写下烦恼，一键粉碎随风飘散</p>
+        </a>
+        <a href="glass.html" class="tool-card">
+            <div class="icon">🔨</div>
+            <h2>砸玻璃</h2>
+            <p>点击玻璃，直到它彻底破碎！</p>
+        </a>
+    </div>
+
+    <div class="emotion-check">
+        <h3>你现在感觉如何？</h3>
+        <div class="emojis">
+            <span onclick="showSuggestion('happy')">😊</span>
+            <span onclick="showSuggestion('sad')">😢</span>
+            <span onclick="showSuggestion('angry')">😡</span>
+        </div>
+        <div class="suggestion" id="suggestion"></div>
+    </div>
+
+    <footer>© 2026 情绪解压实验室 · 课程设计作品</footer>
+
+    <script>
+        function showSuggestion(mood) {
+            const sug = {
+                happy: '心情不错！保持这份愉悦，试试砸玻璃释放多余的活力吧~',
+                sad: '抱抱你，去捏一板泡泡纸，让烦恼全消！',
+                angry: '用力砸玻璃，或者扔飞镖扎稻草人，把愤怒一起消灭！'
+            };
+            document.getElementById('suggestion').textContent = sug[mood];
+        }
+    </script>
+</body>
+</html>
