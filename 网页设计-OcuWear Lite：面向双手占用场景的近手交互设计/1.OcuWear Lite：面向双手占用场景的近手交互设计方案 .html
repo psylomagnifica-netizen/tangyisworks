@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OcuWear Lite：面向双手占用场景的近手交互设计方案</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --dark-bg: #1a2a3a;
+            --text-main: #2c3e50;
+            --text-light: #5a6c7d;
+            --bg-light: #f7f9fc;
+            --card-bg: #ffffff;
+            --border-color: #e1e8ed;
+            --hud-color: #00ffe1;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-light);
+            line-height: 1.6;
+        }
+
+        .web-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px;
+            background-color: var(--card-bg);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+        }
+
+        h1 {
+            font-size: 24pt;
+            color: var(--dark-bg);
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle-bar {
+            height: 4px;
+            width: 80px;
+            background-color: var(--primary-color);
+            margin-bottom: 40px;
+            border-radius: 2px;
+        }
+
+        h2 {
+            font-size: 15pt;
+            color: var(--dark-bg);
+            border-left: 5px solid var(--primary-color);
+            padding-left: 12px;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        h2:hover {
+            padding-left: 18px;
+            color: var(--primary-color);
+        }
+
+        h3 {
+            font-size: 12pt;
+            color: var(--text-main);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 16px;
+            text-align: justify;
+        }
+
+        ul {
+            margin-top: 0;
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .accent-text {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .data-box {
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+        
+        .data-row {
+            margin-bottom: 12px;
+        }
+        
+        .data-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .data-label {
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+        
+        .data-bar-wrapper {
+            width: 100%;
+            background-color: #edf2f6;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .data-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 5px;
+        }
+
+        .quote-box {
+            background-color: #eef5fc;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .quote-box p {
+            margin: 0;
+            font-size: 10pt;
+            color: #3a4a5a;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin: 25px 0;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+        }
+        
+        th {
+            background-color: var(--dark-bg);
+            color: #ffffff;
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 10pt;
+        }
+        
+        td {
+            padding: 12px 16px;
+            font-size: 9.5pt;
+            border-bottom: 1px solid var(--border-color);
+            color: #3a4a5a;
+            vertical-align: top;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        .theory-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .theory-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: var(--primary-color);
+        }
+        
+        .theory-title {
+            font-weight: bold;
+            color: var(--dark-bg);
+            font-size: 10.5pt;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f6;
+            padding-bottom: 6px;
+        }
+        
+        .theory-body {
+            font-size: 10pt;
+            color: #4a5a6a;
+        }
+
+        /* 嵌入式交互小工具样式适配 */
+        .interactive-sandbox {
+            margin: 25px 0;
+            background: #05070a;
+            color: var(--hud-color);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 225, 0.2);
+            position: relative;
+            height: 450px;
+        }
+
+        .sandbox-hud {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 12px;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(0, 255, 225, 0.2);
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .sandbox-canvas {
+            display: block;
+            width: 100%;
+            height: calc(450px - 43px);
+            cursor: crosshair;
+        }
+
+        .sandbox-panel {
+            position: absolute;
+            right: 15px;
+            top: 60px;
+            width: 260px;
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid rgba(0, 255, 225, 0.2);
+            padding: 12px;
+            font-size: 11px;
+            border-radius: 4px;
+            pointer-events: auto;
+        }
+
+        .sandbox-glow {
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 0 0 8px var(--hud-color);
+            text-transform: uppercase;
+        }
+
+        .sandbox-status {
+            margin-top: 5px;
+            padding: 6px;
+            border: 1px solid rgba(0, 255, 225, 0.3);
+            background: rgba(0, 255, 225, 0.05);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .sandbox-log {
+            height: 150px;
+            overflow-y: auto;
+            font-size: 10px;
+            line-height: 1.4;
+            margin-top: 10px;
+            border-top: 1px dashed rgba(0, 255, 225, 0.1);
+            padding-top: 8px;
+            color: #8fa0b3;
+        }
+
+        .sandbox-btn {
+            margin-top: 8px;
+            background: var(--hud-color);
+            color: #05070a;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 2px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .sandbox-btn:hover {
+            background: #ffffff;
+            box-shadow: 0 0 10px var(--hud-color);
+        }
+
+        .ref-section {
+            margin-top: 40px;
+            border-top: 1px solid #cbd5e1;
+            padding-top: 25px;
+        }
+        
+        .ref-group-title {
+            font-family: monospace;
+            font-size: 9pt;
+            color: var(--primary-color);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 4px;
+            font-weight: bold;
+        }
+        
+        .ref-item {
+            font-size: 9pt;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            text-align: justify;
+            padding-left: 25px;
+            text-indent: -25px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            font-size: 9pt;
+            color: #8fa0b3;
+            border-top: 1px solid var(--border-color);
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .web-container {
+                margin: 0;
+                padding: 20px;
+                border-radius: 0;
+            }
+            .sandbox-panel {
+                position: static;
+                width: 100%;
+                margin-top: 10px;
+            }
+            .interactive-sandbox {
+                height: auto;
+            }
+            .sandbox-canvas {
+                height: 250px;
+            }
+        }
+
+        /* 整个图片组合的容器 */
+            .img-container {
+                text-align: center;      /* 核心：让内部的图片和小字全部水平居中 */
+                margin: 25px auto;       /* 上下留出 25px 空隙，左右自动外边距 */
+                max-width: 600px;        /* 限制组合的最大宽度，防止图片太大 */
+        }
+
+/* 图片本身的自适应样式 */
+            .custom-img {
+                width: 100%;             /* 宽度撑满容器 */
+                height: auto;            /* 高度等比例缩放，防止变形 */
+                border-radius: 6px;      /* 顺便加点小圆角，显得更精致 */
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* 微弱的投影，增加立体感 */
+                transition: transform 0.2s; /* 为鼠标悬停加个微动画 */
+        }
+
+/* 鼠标悬停在图片上时的微弱放大效果（增加交互感） */
+            .custom-img:hover {
+                transform: scale(1.01); 
+                box-shadow: 0 6px 16px rgba(0,0,0,0.1); /* 悬停时加深投影 */}
+
+/* 小字注释的样式 */
+            .img-caption {
+                font-size: 9.5pt;        /* 小字：通常比正文小 1-2 号 */
+                color: #5a6c7d;          /* 浅灰色：降低视觉层级，弱化注释 */
+                margin-top: 10px;        /* 图片和下方文字之间的距离 */
+                line-height: 1.4;
+                }
+
+/* 注释里链接的样式 */
+            .img-caption a {
+                color: #5a6c7d;          /* 让文字链接颜色与注释小字一致 */
+                text-decoration: none;   /* 去掉默认下划线 */
+            }
+
+/* 鼠标悬停在小字链接上时改变颜色，提示用户可点击 */
+            .img-caption a:hover {
+                color: #4a90e2;          /* 悬停时变为你网页的主体蓝色 */
+                text-decoration: underline; /* 悬停时加上下划线 */
+            }
+
+
+            /* 流程图外层总容器 */
+.flow-container {
+    margin: 30px 0;
+    padding: 24px;
+    background: #05070a; /* 采用与交互小工具一致的暗黑科技底色 */
+    border: 1px solid rgba(0, 255, 225, 0.15);
+    border-radius: 8px;
+}
+
+/* 流程图小标题 */
+.flow-title {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #00ffe1; /* 荧光青色提示 */
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+    border-bottom: 1px dashed rgba(0, 255, 225, 0.1);
+    padding-bottom: 8px;
+}
+
+/* 滚动包装层：保证移动端和小屏幕下可以横向滑动查看 */
+.flow-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow-x: auto;
+    padding: 10px 5px;
+    gap: 10px;
+}
+
+/* 流程图节点通用样式 */
+.flow-node {
+    flex: 1;
+    min-width: 130px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(225, 232, 237, 0.1);
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.flow-node:hover {
+    border-color: #00ffe1;
+    box-shadow: 0 0 10px rgba(0, 255, 225, 0.1);
+}
+
+/* 节点上方的小标签 */
+.node-tag {
+    font-family: monospace;
+    font-size: 8pt;
+    color: #8fa0b3;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* 节点主标题 */
+.node-title {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* 节点细节说明 */
+.node-desc {
+    font-size: 8.5pt;
+    color: #5a6c7d;
+    margin-top: 4px;
+}
+
+/* 特殊节点颜色区别 */
+.input-node { border-left: 3px solid #5a6c7d; }
+.list-node { border-left: 3px solid #4a90e2; } /* 核心门限用蓝色 */
+.output-node { border-left: 3px solid #00ffe1; } /* 触发用荧光青 */
+
+/* 科技感箭头 */
+.flow-arrow {
+    flex-shrink: 0;
+    width: 20px;
+    height: 10px;
+    position: relative;
+}
+
+.flow-arrow::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(0, 255, 225, 0.3);
+}
+
+.flow-arrow::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-left: 6px solid rgba(0, 255, 225, 0.6);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+}
+
+/* 金字塔大组件总外壳 */
+.pyramid-container {
+    margin: 35px 0;
+    padding: 26px;
+    background: #05070a; /* 与模拟沙盒一致的暗黑背景 */
+    border: 1px solid rgba(0, 255, 225, 0.15);
+    border-radius: 8px;
+}
+
+/* 组件标题 */
+.pyramid-title {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #00ffe1;
+    letter-spacing: 0.5px;
+    margin-bottom: 25px;
+    border-bottom: 1px dashed rgba(0, 255, 225, 0.1);
+    padding-bottom: 8px;
+}
+
+/* 弹性网格排版 */
+.pyramid-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+/* 左侧金字塔图形区样式 */
+.pyramid-visual {
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+/* 3D纯CSS立体层级结构设计 */
+.pyramid-layer {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    margin-bottom: 5px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 5px rgba(0, 255, 225, 0.1));
+}
+
+/* 顶层：金色小三角 */
+.layer-top {
+    border-width: 0 35px 50px 35px;
+    border-color: transparent transparent rgba(255, 193, 7, 0.7) transparent;
+}
+.layer-top:hover {
+    border-color: transparent transparent rgba(255, 193, 7, 1) transparent;
+    filter: drop-shadow(0 0 12px #ffc107);
+}
+
+/* 中层：蓝色梯形 */
+.layer-mid {
+    border-width: 0 55px 55px 55px;
+    border-color: transparent transparent rgba(74, 144, 226, 0.6) transparent;
+    margin-top: -10px;
+}
+.layer-mid::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -35px;
+    border-width: 0 35px 0 35px;
+    border-color: transparent transparent #05070a transparent;
+}
+.layer-mid:hover {
+    border-color: transparent transparent rgba(74, 144, 226, 0.95) transparent;
+    filter: drop-shadow(0 0 12px #4a90e2);
+}
+
+/* 底层：宽大蓝绿梯形 */
+.layer-bottom {
+    border-width: 0 80px 60px 80px;
+    border-color: transparent transparent rgba(0, 255, 225, 0.4) transparent;
+    margin-top: -10px;
+}
+.layer-bottom::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -55px;
+    border-width: 0 55px 0 55px;
+    border-color: transparent transparent #05070a transparent;
+}
+.layer-bottom:hover {
+    border-color: transparent transparent rgba(0, 255, 225, 0.85) transparent;
+    filter: drop-shadow(0 0 15px #00ffe1);
+}
+
+/* 右侧文本卡片列表排版 */
+.pyramid-data {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 文本卡片基础样式 */
+.data-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(225, 232, 237, 0.08);
+    border-radius: 6px;
+    padding: 12px 16px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* 悬停卡片高亮逻辑 */
+.data-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.card-top:hover { border-left: 4px solid #ffc107; box-shadow: left;}
+.card-mid:hover { border-left: 4px solid #4a90e2; }
+.card-bottom:hover { border-left: 4px solid #00ffe1; }
+
+/* 标签小徽章 */
+.card-badge {
+    font-family: monospace;
+    font-size: 8pt;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+.badge-top { color: #ffc107; }
+.badge-mid { color: #4a90e2; }
+.badge-bottom { color: #00ffe1; }
+
+/* 卡片标题 */
+.card-head {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+/* 卡片正文 */
+.card-body {
+    font-size: 9pt;
+    color: #8fa0b3;
+    line-height: 1.4;
+    text-align: justify;
+}
+
+/* 手机移动端自适应逻辑：自动转化为上下垂直堆叠排版 */
+@media (max-width: 768px) {
+    .pyramid-wrapper {
+        flex-direction: column;
+    }
+    .pyramid-visual {
+        flex: none;
+        transform: scale(0.9);
+    }
+}
+
+.project-author {
+    font-size: 11pt;          /* 字号略小于正文，突出视觉层级 */
+    color: var(--text-light); /* 使用网页自带的优雅浅灰色 */
+    margin-top: -5px;         /* 向上微调，缩短与大标题的物理空隙 */
+    margin-bottom: 15px;      /* 与下方蓝色装饰线保持呼吸间距 */
+    letter-spacing: 1px;      /* 字间距微调，更具报告规范质感 */
+    font-weight: 500;
+}
+
+.teacher-review {
+            margin: 30px 0 30px 0;          /* 上下留白 */
+            padding: 18px 24px;
+            background: #fcf8f3;             /* 暖色浅底 */
+            border-left: 6px solid #e6a23c;  /* 金色左侧强调 */
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .review-title {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #b87c2a;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+       
+        .review-content {
+            font-size: 10.5pt;
+            color: #3a4a5a;
+            line-height: 1.8;
+        }
+        .review-content p {
+            margin-bottom: 6px;
+        }
+        .review-meta {
+            margin-top: 10px;
+            font-size: 9.5pt;
+            color: #8fa0b3;
+            text-align: right;
+            border-top: 1px dashed #e8e0d8;
+            padding-top: 8px;
+        }
+
+        .review-blank-area {
+    min-height: 200px; /* 或根据需要调整 */
+    border: 1px dashed #d0c8be;
+    border-radius: 4px;
+    margin: 12px 0 16px 0;
+    background: #fdfcfa;
+    position: relative;
+}
+.blank-hint {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 9pt;
+    color: #b0a89a;
+    background: transparent;
+}
+    </style>
+</head>
+<body>
+
+<div class="web-container">
+
+    <h1>OcuWear Lite：面向双手占用场景的近手交互设计</h1>
+    <div class="project-author">2024301031001 唐奕</div>
+    <div class="subtitle-bar"></div>
+
+    <div class="teacher-review">
+    <div class="review-title">教师点评</div>
+    <div class="review-blank-area">
+        <span class="blank-hint"> </span>
+    </div>
+
+    <div class="review-meta"> </div>
+        
+    </div>
+    <h2>01  设计背景与问题定义</h2>
+    <h3> 现实冲突：高频物理场景数据</h3>
+    <p>在日常移动互联生态中，用户可能频繁处于<strong>“双手被物理占用，但仍需与数字设备进行有限交互”</strong>的状态。根据多维用户问卷调研，核心限制情境及其发生概率分布如下：</p>
+
+    <div class="data-box">
+        <div class="data-row">
+            <div class="data-label">[户外活动情境] 56.93% (提重物、撑伞、遛狗、戴手套)</div>
+            <div class="data-bar-wrapper"><div class="data-bar" style="width: 56.93%;"></div></div>
+        </div>
+        <div class="data-row">
+            <div class="data-label">[家务劳动情境] 55.47% (做饭手油或手湿、洗碗、大扫除)</div>
+            <div class="data-bar-wrapper"><div class="data-bar" style="width: 55.47%;"></div></div>
+        </div>
+        <div class="data-row">
+            <div class="data-label">[通勤运动情境] 41.61% (抓握扶手、骑行、户外跑步)</div>
+            <div class="data-bar-wrapper"><div class="data-bar" style="width: 41.61%;"></div></div>
+        </div>
+    </div>
+
+    <h3> 现有交互方式的局限性</h3>
+    <p>现有交互范式在上述噪声与肢体受限环境下，可能面临明显的可用性问题：</p>
+    <ul>
+        <li><strong>物理触屏</strong>：在公共推搡或运动环境中，部分用户报告 <span class="accent-text">54.74%</span> 出现“点不准与误触”现象，且存在设备跌落与液体侵入的潜在风险。</li>
+        <li><strong>语音交互</strong>：在骑行逆风、地铁嘈杂等强风噪环境下信噪比较低；同时在安静公共场合可能涉及隐私顾虑或社交不适。</li>
+        <li><strong>手表或耳机代偿</strong>：可能依赖肢体大幅度抬腕或越肩动作，在衣物包裹或手臂受力受限时可用性下降。</li>
+    </ul>
+
+    <div class="quote-box">
+        <p><strong>核心挑战：</strong> 在交互受限的情况下，约<strong>42.34%</strong> 的用户可能选择暂时放弃操作；另有<strong>41.61%</strong> 的用户会尝试冒险使用手机（可能引发安全隐患）。目前市场仍较少有专门面向双手占用场景下的“近手、盲操式”底层输入方案。</p>
+    </div>
+
+    <h2>02  设计目标</h2>
+    <p>本方案尝试探索一种不依赖传统触屏范式的交互方式，希望在不释放双手原生抓握姿态的前提下，提供一种可行的 <strong>“脱离手机的近手交互”</strong> ，可以兼顾以下几个方面：</p>
+    <ul>
+        <li><strong>非视觉盲操作</strong>：依托本体感受，尽量减少对视觉瞄准与屏幕跟随的依赖，有助于保障行动安全。</li>
+        <li><strong>低动作成本</strong>：交互范围收束于亚厘米级，无需显著改变肢体现有的抓握与承重姿态。</li>
+        <li><strong>社交隐蔽性</strong>：通过微小型动作实现较为私密的操作，降低对周围人的影响。</li>
+        <li><strong>场景鲁棒性</strong>：结合硬件解耦与端侧动态抗噪处理，尝试抑制环境中的动态干扰。</li>
+    </ul>
+
+    <h2>03  现有方案分析及相关理论基础</h2>
+    <h3> 竞品架构对比</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">交互方案</th>
+                    <th style="width: 25%;">物理本征优势</th>
+                    <th style="width: 30%;">双手占用场景下的典型局限</th>
+                    <th style="width: 25%;">本方案的差异化方向</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>智能手表</strong></td>
+                    <td>信息流多级查看</td>
+                    <td>提重物或衣袖遮挡时，抬腕操作受到明显限制，交互可达性降低。</td>
+                    <td><strong>免抬腕控制</strong>：在手腕活动受限场景中仍可保持一定的控制能力。</td>
+                </tr>
+                <tr>
+                    <td><strong>蓝牙耳机</strong></td>
+                    <td>触觉反馈与语音</td>
+                    <td>部分操作需要“举手越肩”，戴厚手套或未佩戴耳机时可用性受限。</td>
+                    <td><strong>免越肩微操</strong>：交互动作发生在手部原生区域，减少大幅度空间位移。</td>
+                </tr>
+                <tr>
+                    <td><strong>语音助手</strong></td>
+                    <td>零手部触控</td>
+                    <td>在强风噪或嘈杂环境中识别率下降；公共场合存在隐私顾虑。</td>
+                    <td><strong>隐式数字微操</strong>：本地端侧处理，对外部环境噪声相对不敏感。</td>
+                </tr>
+                <tr>
+                    <td><strong>视线与头部追踪</strong></td>
+                    <td>零肢体负荷</td>
+                    <td>依赖视觉瞄准与环境光，颠簸状态下易疲劳且认知负荷较高。</td>
+                    <td><strong>肌肉记忆路径</strong>：基于手部自然解剖结构，视觉依赖度较低。</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3> 相关理论支撑</h3>
+    <div class="theory-card">
+        <div class="theory-title">理论 01  吉布森“可负担性”理论 (Affordance Theory) [1]</div>
+        <div class="theory-body">拇指与食指侧面的天然对掌结构具备潜在的可交互负担性。手部的本体感受可能支持用户在盲操状态下形成较为自然的肌肉记忆。</div>
+    </div>
+    <div class="theory-card">
+        <div class="theory-title">理论 02  费茨法则 (Fitts's Law) 的逆向空间泛化 [2]</div>
+        <div class="theory-body">将触屏的靶区限制扩展为食指侧面的连续滑动区域，毫米级微滑动处于多数人的生理震颤容错区间，有助于提升交互吞吐量。</div>
+    </div>
+    <div class="theory-card">
+        <div class="theory-title">理论 03  隐式交互的确定性映射原则 (Deterministic Mapping) [3]</div>
+        <div class="theory-body">设计上尽量避免引入复杂的动态多级菜单，倾向于采用固定的底层动作-功能映射，以降低双手占用场景下的情境认知负担。</div>
+    </div>
+
+    <h2>04  设计方案硬件架构</h2>
+    <h3>4.1 可选的两种硬件形态</h3>
+    <p>针对不同活动强度及佩戴偏好，硬件层可提供如下两种可穿戴外设形态：</p>
+    <ul>
+        <li><strong>形态一  智能指环</strong>：采用超薄高致密生物陶瓷或柔性工程树脂（壁厚 约2.2mm），佩戴于食指根部。内置低功耗蓝牙SoC与震动马达，适用于日常活动场景。</li>
+        <img src="7.OcuWear Lite两大硬件形态.png" alt="OcuWear Lite" class="custom-img">
+        <li><strong>形态二  柔性表皮贴片</strong>：厚度约 0.3mm 的医用级低敏水胶体柔性电子贴片，贴附于食指外侧。该技术形态与近年来柔性电子皮肤的发展方向具有一定契合性。例如，西北大学提出的高分辨率可穿戴触觉感知设备[4]以及国内第三代电子皮肤产品探索[5]，均表明柔性触觉感知技术正在向轻量化、可穿戴化方向发展，为本设计提供了技术参考。</li>
+        <figure class="img-container">
+    <a href="https://www.mccormick.northwestern.edu/news/articles/2025/03/feeling-the-future-new-wearable-device-mimics-the-complexity-of-human-touch/" target="_blank">
+        <img src="5.西北大学研发的穿戴式设备.png" alt="西北大学研发的可穿戴式设备" class="custom-img">
+    </a>
+    
+    <figcaption class="img-caption">
+        <a href="https://www.mccormick.northwestern.edu/news/articles/2025/03/feeling-the-future-new-wearable-device-mimics-the-complexity-of-human-touch/" target="_blank">
+            西北大学研发的可穿戴式设备
+        </a>
+    </figcaption>
+</figure>
+    </ul>
+
+    <h3>4.2 物理层抗干扰策略</h3>
+<p>针对“口袋摩擦、手部潮湿以及运动压力变化可能带来的信号干扰”，系统尝试构建由物理、硬件、算法组合的<strong>端侧抗干扰架构</strong>：</p>
+
+<ul>
+    <li>
+        <strong>【物理层：基于手部受力区域的传感布置】</strong><br>
+        <strong>核心思路</strong>：空间位置解耦与主动避障。<br>
+        <strong>功能闭环</strong>：传感矩阵主要部署于食指根部至第二关节的“外侧裤缝区”（大拇指自然垂落时可接触的区域）。该区域相对避开了抓握或提重物时的“主受力面”，有助于减少皮肤重度形变引起的伪触发风险。
+    </li>
+    
+    <li>
+        <strong>【硬件层：多通道差分共模抑制 (CMRR) 与界面隔离 [6]】</strong><br>
+        <strong>核心思路</strong>：空间特征差分与物理介质阻隔。<br>
+        <strong>功能闭环</strong>：传感层表面可覆盖低摩擦系数的 PTFE 疏水涂层，减少汗液渗透的影响。内部采用交叉指型电容阵列设计：当衣物面料挤压产生大面积、同步的全局形变时，系统将其识别为“共模信号”并通过差分放大器在硬件级进行抑制；而当大拇指执行特定滑行时，产生的局部“差模信号”可被相对精准提取，实现一定程度的硬件级噪声抑制。
+    </li>
+</ul>
+
+<figure class="img-container">
+    <a href="https://www.cam.ac.uk/stories/robotic-skin" target="_blank">
+        <img src="6.剑桥大学研发的机器人皮肤.png" alt="剑桥大学机器人皮肤研究" class="custom-img">
+    </a>
+    <figcaption class="img-caption">
+        <a href="https://www.cam.ac.uk/stories/robotic-skin" target="_blank">
+            剑桥大学自适应机器人皮肤
+        </a>
+    </figcaption>
+</figure>
+
+<ul>
+    <li>
+        <strong>【算法层：级联门限与能量方差剪枝 [7]】</strong><br>
+        <strong>核心思路</strong>：时域特征识别与压摆率门限限定。<br>
+        <div class="flow-container">
+    <div class="flow-title">级联门限端侧多维信号筛查流  </div>
+    
+    <div class="flow-wrapper">
+        <div class="flow-node input-node">
+            <span class="node-tag">SIGNAL</span>
+            <div class="node-title">原始信号输入</div>
+        </div>
+        
+        <div class="flow-arrow"></div>
+        
+        <div class="flow-node list-node">
+            <span class="node-tag">GATE 01</span>
+            <div class="node-title">压摆率门限</div>
+            <div class="node-desc">校验时域变化斜率</div>
+        </div>
+        
+        <div class="flow-arrow"></div>
+        
+        <div class="flow-node list-node">
+            <span class="node-tag">GATE 02</span>
+            <div class="node-title">能量方差门限</div>
+            <div class="node-desc">校验信号持续强度</div>
+        </div>
+        
+        <div class="flow-arrow"></div>
+        
+        <div class="flow-node list-node">
+            <span class="node-tag">GATE 03</span>
+            <div class="node-title">时间窗口门限</div>
+            <div class="node-desc">校验动作生理时长</div>
+        </div>
+        
+        <div class="flow-arrow"></div>
+        
+        <div class="flow-node output-node">
+            <span class="node-tag">ACTION</span>
+            <div class="node-title">触发最终指令</div>
+        </div>
+    </div>
+</div>
+        <strong>功能闭环</strong>：端侧低功耗 SoC 实时计算电容信号的时域一阶导数与能量方差。行走颠簸、摆臂等产生的衣物摩擦杂波，在时域上通常表现为相对随机、低频、连续的波动；而明确的肌肉操控可能产生更高的动态压摆率特征。算法通过级联门限尝试过滤部分伪随机低频噪声，提高输入的确定性。
+    </li>
+</ul>
+    <div class="theory-card" style="border-left: 4px solid var(--hud-color); background: #05070a; color: #8fa0b3; font-size: 9.5pt;">
+    <div style="font-weight: bold; color: var(--hud-color); margin-bottom: 6px;">技术名词释义 // TECHNICAL GLOSSARY</div>
+    <p style="margin-bottom: 8px; font-size: 9.5pt;">
+        <strong style="color: #ffffff;">1. CMRR（共模抑制比，Common Mode Rejection Ratio）</strong>：
+        衡量放大器抑制共模信号（两侧输入端同时收到的相同噪声信号）能力的一项指标。在本项目中，当衣物布料大面积挤压手指时，传感阵列各通道可能同时产生相似的电荷形变噪声（即共模噪声）；CMRR 机制利用差分电路，能够将这种大面积的全局相同噪声在硬件底层进行差分抵消，同时相对保留大拇指局部滑动带来的特异性“差模信号”。
+    </p>
+    <p style="margin-bottom: 0; font-size: 9.5pt;">
+        <strong style="color: #ffffff;">2. SoC（系统级芯片，System on Chip）</strong>：
+        指将微处理器、模拟电路、数字逻辑、时钟及电源管理等多个功能模块高集成度地封装在单块芯片上的微型系统。本项目由于受限于智能指环和表皮贴片的物理体积与功耗要求，需采用端侧超低功耗 SoC，在不依赖手机主处理器的情况下，在外设端完成信号的硬件去噪与手势轨迹提取。
+    </p>
+</div>
+
+    <h2>05  核心交互方式设计</h2>
+    <h3>5.1 基础交互映射（固定映射）</h3>
+    <p>为了减少认知漂移，底层物理映射关系相对固定，不随上下文频繁变动，如下表所示：</p>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40%;"> 滑动行为</th>
+                    <th style="width: 60%;"> 物理映射功能</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>沿食指侧面 1~5mm 上滑</strong> </td>
+                    <td>接听来电 或 媒体音量增加</td>
+                </tr>
+                <tr>
+                    <td><strong>沿食指侧面 1~5mm 下滑</strong> </td>
+                    <td>挂断拒接 或 媒体音量减少</td>
+                </tr>
+                <tr>
+                    <td><strong>向虎口方向内滑</strong> </td>
+                    <td>切换至媒体下一首</td>
+                </tr>
+                <tr>
+                    <td><strong>向指尖方向外滑</strong> </td>
+                    <td>切换至媒体上一首</td>
+                </tr>
+                <tr>
+                    <td><strong>局部亚厘米级双击</strong></td>
+                    <td>通话静音切换 或 播放暂停</td>
+                </tr>
+                <tr>
+                    <td><strong>局部区域长按</strong></td>
+                    <td>拒接并自动回复短信 或 触发紧急 SOS 定位</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3> 实时演示：近手隐式交互模拟</h3>
+    <p>下方为手势测试沙盒。您可以按住鼠标左键（或触摸）并在黑色画布区域划动，模拟拇指在食指侧壁上的微滑动输入，系统将尝试识别手势并给出映射示意：</p>
+
+    <!-- 嵌入式交互小程序 -->
+    <div class="interactive-sandbox">
+        <div class="sandbox-hud">近手隐式交互系统 实时演示</div>
+        <canvas id="sandboxCanvas" class="sandbox-canvas"></canvas>
+        <div class="sandbox-panel">
+            <div class="sandbox-glow">系统状态面板</div>
+            <div class="sandbox-status" id="sandboxStatus">待机中</div>
+            <button class="sandbox-btn" onclick="clearSandboxLog()">清空日志</button>
+            <div class="sandbox-log" id="sandboxLog"></div>
+        </div>
+    </div>
+<h3> 技术展望：中远期智能演进</h3>
+    <p>在未来生态扩展中，可考虑引入响应式移动界面的<strong>预期性交互范式 (Anticipatory Interaction Paradigm)</strong>[8]。相比传统“用户指令-设备响应”模式，预期性交互可尝试通过端侧轻量级模型，在本地分析用户的显隐式意图流，提前预测用户的下一个行为。有研究表明，通过从用户历史行为中学习隐式意图，可以提升移动智能体对个体习惯的适应能力[9]。</p>
+    
+    <p>在复杂场景下，可考虑结合<strong>多模态预测模型</strong>与<strong>意图分解模型 (Intent Decomposition Model)[10]</strong>，系统可尝试将复杂用户任务拆解为多个可识别的行为单元，从而辅助提升场景理解能力。：</p>
+    <ul>
+        <li><strong>多模态预测</strong>：综合分析时间、GPS定位、环境风噪以及骨传导传感器收集到的生理信号，辅助判断用户当前的场景状态。</li>
+        <li><strong>意图分解机制</strong>：将复杂的来电情境分解为元数据流（如：将“未知高频来电”分解为“可能为快递外卖”或“疑似推销”）。</li>
+    </ul>
+    <p>基于上述AI分析，系统可在语音通道内对来电优先级进行辅助排序，并通过耳机进行简要提示（如“顺丰快递，建议接听”）。设计上，AI主要提供辅助建议，<strong>最终控制权仍保留给物理映射</strong>，以避免人工智能越权带来的控制感下降。</p>
+
+    <h3>5.2 近手交互模式激活的三要素</h3>
+    <p>为降低口袋内因布料挤压或意外碰撞导致的伪触发概率，系统设置了<strong>三要素协同级联校验机制</strong>。仅当以下三个条件同时满足时，交互通道才被激活：</p>
+    
+    <div class="pyramid-container">
+    <div class="pyramid-title">近手交互激活机制金字塔模型</div>
+    
+    <div class="pyramid-wrapper">
+        <div class="pyramid-visual">
+            <div class="pyramid-layer layer-top" data-layer="3">
+                <div class="pyramid-face"></div>
+            </div>
+            <div class="pyramid-layer layer-mid" data-layer="2">
+                <div class="pyramid-face"></div>
+            </div>
+            <div class="pyramid-layer layer-bottom" data-layer="1">
+                <div class="pyramid-face"></div>
+            </div>
+        </div>
+        
+        <div class="pyramid-data">
+            <div class="data-card card-top">
+                <div class="card-badge badge-top">GATE 03显式触发</div>
+                <div class="card-head">3. 用户显式动作触发</div>
+                <div class="card-body">
+                    在下方两项基准达标后，传感阵列开辟低功耗“意图捕获窗口”。用户需在食指侧壁执行一次<strong>局部亚厘米级双击动作</strong>。该动作触发端侧芯片[11]后，交互通道方被正式激活，杜绝一切静止伪触发。
+                </div>
+            </div>
+            
+            <div class="data-card card-mid">
+                <div class="card-badge badge-mid">GATE 02行为校验</div>
+                <div class="card-head">2. 状态运动识别</div>
+                <div class="card-body">
+                    系统调用惯性测量单元（IMU）高频捕获人体空间运动特征序列。通过端侧轻量化<strong>小波变换算法</strong>，精准识别用户当前是否处于“步行通勤、跑步”或“自行车骑行”等典型双手占用场景，动态排除静止躺卧。
+                </div>
+            </div>
+            
+            <div class="data-card card-bottom">
+                <div class="card-badge badge-bottom">GATE 01环境环境锁定</div>
+                <div class="card-head">1. 环境情境锁定</div>
+                <div class="card-body">
+                    安全防御基底。系统通过红外接近传感器与环境光传感器进行全时初步判定。当环境光强趋近于零且红外反射距离小于预设阈值时，系统判定设备处于<strong>“口袋/背包模式”</strong>，立刻挂起底层防御状态。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    
+    <p>为了保障续航，系统可支持多模态智能级交互[12]与<strong>空间锚定 (Spatial Anchoring)</strong>技术。空间锚定将虚拟控制区通过硬件差分算法与食指解剖学坐标关联，以减少因指环轻微位移导致的控制漂移。在非交互状态下，整体挂起功耗可设计为<strong>低于 1 毫瓦（mW）</strong>。</p>
+    
+    <p>同时，考虑到盲操时的容错需求，系统可内置约 <strong>2 秒的时域容错纠错窗口</strong>。若用户误触发或滑动越界，可在 2 秒内执行一次反向滑动，端侧内核支持撤销上一条指令，以增强人机信任感。</p>
+<h2>06  典型使用场景</h2>
+    <p>本方案重点关注以下三类典型场景：</p>
+    <ul>
+        <li><strong> 场景 A  通勤抓扶手接电话</strong>：高峰期地铁中，用户单手抓握吊环。手机在裤袋鸣响，智能手表被衣袖遮挡，语音助手受噪音干扰。用户可尝试在拇指原位执行 <strong>1~5mm 的微上滑</strong> 来接听来电。</li>
+        <li><strong> 场景 B  双手提重物来电处理</strong>：双手提物或单手撑伞时，突发来电。用户可利用大拇指在非主受力区做微下滑挂断来电，或双击切换静音，无需放下手中物品。</li>
+        <li><strong> 场景 C  极速骑行与运动控制</strong>：骑行者双手紧握车把保持平衡，强风噪下语音助手难以识别。用户可通过指侧微滑动完成媒体切换或通话管理，视线保持在前方路面。</li>
+    </ul>
+
+    <div class="quote-box">
+        <p><strong>策略说明：</strong> 对于“厨房做饭或洗碗（手油/手湿）”场景，本设计在第一阶段暂不优先覆盖。后续可考虑通过外置毫米波雷达外设进行非接触感知，利用卷积神经网络手势识别[13]与空间计算[14][15]实现接触式传感的补充，以提升技术投入产出比（ROI）。</p>
+    </div>
+
+    <h2>07  设计特点总结</h2>
+    <p>本方案尝试在移动人机交互领域提供以下几个潜在特点：</p>
+    <ul>
+        <li><strong>1. 脱离手机的隐式感知</strong>：在手部原生抓握姿态中尝试实现一定程度的数字控制。</li>
+        <li><strong>2. 低动作成本</strong>：将操作行为收束至 1~5mm 的大拇指微运动，力求将对物理行为的干扰降至较低水平。</li>
+        <li><strong>3. 物理与技术的抗干扰性</strong>：通过“非主受力外侧裤缝区”的解剖学定位，配合硬件级多通道差分共模抑制与自抗扰滤波算法，尝试抑制口袋伪信号。</li>
+        <li><strong>4. 社交隐蔽性</strong>：交互动作微小且无声，有助于在公共场合提供相对体面的操作方式。</li>
+    </ul>
+
+    <h2>08  设计总结</h2>
+    <p>本方案尝试将移动交互的视角从“肢体抽离去迁就屏幕”转向“在既有手部动作中融入数字控制”。核心问题在于探讨：<strong>当用户的双手被现实物理任务占用时，如何维持人与数字设备之间相对自然的连接。</strong></p>
+
+   <div class="ref-section">
+        <div style="font-weight: bold; font-size: 11pt; color: #1a2a3a; margin-bottom: 10px;">参考文献 · REFERENCES</div>
+        
+        <div class="ref-group-title">[经典人机交互模型与隐式交互理论]</div>
+        <div class="ref-item">[1] GIBSON J J. The Ecological Approach to Visual Perception[M]. Boston: Houghton Mifflin, 1979: 127-143.</div>
+        <div class="ref-item">[2] MACKENZIE I S. Fitts' law as a research and design tool in human-computer interaction[J]. Human-Computer Interaction, 1992, 7(1): 91-139.</div>
+        <div class="ref-item">[3] SCHMIDT A. Implicit human-computer interaction through context[J]. Personal and Ubiquitous Computing, 2000, 4(2): 191-199.</div>
+        
+        <div class="ref-group-title">[柔性表皮电子与硬件去噪技术]</div>
+        <div class="ref-item">[4] Northwestern University. Feeling the future: new wearable device mimics the complexity of human touch[EB/OL]. (2025-03-27). https://www.mccormick.northwestern.edu/news/articles/2025/03/feeling-the-future-new-wearable-device-mimics-the-complexity-of-human-touch/</div>
+        <div class="ref-item">[5] 福莱新材. 第三代电子皮肤产品发布：植入芯片算法打造触觉智能TPU[EB/OL]. (2025-11-27). </div>
+        <div class="ref-item">[6] BAXTER L K. Capacitive Sensors: Design and Applications[M]. New York: IEEE Press, 1997: 85-112.</div>
+        <div class="ref-item">[7] University of Cambridge. Single-material electronic skin gives robots the human touch[EB/OL]. (2025-06-11). https://www.cam.ac.uk/stories/robotic-skin</div>
+        
+        <div class="ref-group-title">[多模态意图感知与边缘交互智能体]</div>
+        <div class="ref-item">[8] Jain D.Design Systems for Artificial Intelligence-Enabled Mobile Interfaces:Bridging Human Cognition and Adaptive User Interface Engineering.Journal of Computational Analysis and Applications, 2025.</div>
+        <div class="ref-item">[9] Wu Z, et al. Quick on the uptake: eliciting implicit intents from human demonstrations for personalized mobile-use agents[J/OL]. arXiv preprint, 2025.</div>
+        <div class="ref-item">[10] Cohen D, Halpern Y, Kahlon N, et al. Small models, big results: achieving superior intent extraction through decomposition[C]//Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing. Suzhou: Association for Computational Linguistics, 2025: 18780-18799.</div>
+        <div class="ref-item">[11] Sensory Inc. Sensory’s new voice SDK delivers privacy, accuracy, and low power for edge devices[EB/OL]. (2025-10-07). https://sensory.com/news/new-voice-sdk-delivers-privacy-accuracy-low-power/.</div>
+        <div class="ref-item">[12] Samsung. Samsung Galaxy S25 Edge. https://www.samsungmobilepress.com/articles/samsung-galaxy-s25-series-sets-the-standard-of-ai-phone-as-a-true-ai-companion</div>
+      
+        <div class="ref-group-title">[毫米波雷达、空间计算与情境智能]</div>
+        <div class="ref-item">[13] 王俊, 郑彤, 雷鹏, 等. 基于卷积神经网络的手势动作雷达识别方法[J]. 北京航空航天大学学报, 2018, 44(6): 1117-1123.</div>
+        <div class="ref-item">[14] GlobalData. Innovation radar: spatial computing report[R]. 2025.</div>
+        <div class="ref-item">[15] Gartner. Emerging tech impact radar: spatial AI[EB/OL]. (2025-10-14). https://www.gartner.com/en/documents/7066198.</div>
+
+    <footer>
+        OcuWear Lite  &copy; 2026 
+    </footer>
+
+</div>
+
+<script>
+// 初始化沙盒交互程序
+const canvas = document.getElementById("sandboxCanvas");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = 450 - 43;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+let drawing = false;
+let path = [];
+
+function sandboxLog(msg){
+    const box = document.getElementById("sandboxLog");
+    box.innerHTML += ">> " + msg + "<br>";
+    box.scrollTop = box.scrollHeight;
+}
+
+function setSandboxStatus(s){
+    document.getElementById("sandboxStatus").innerText = s;
+}
+
+function drawPath(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+
+    for(let i=0; i<path.length; i++){
+        let p = path[i];
+        if(i===0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+    }
+
+    ctx.strokeStyle = "#00ffe1";
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = "#00ffe1";
+    ctx.stroke();
+}
+
+function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+function startGesture(e) {
+    drawing = true;
+    path = [];
+    path.push(getCanvasCoords(e));
+    sandboxLog("手势检测：开始记录输入序列");
+}
+
+function moveGesture(e) {
+    if(!drawing) return;
+    if(e.cancelable) e.preventDefault();
+    path.push(getCanvasCoords(e));
+    drawPath();
+}
+
+function endGesture() {
+    if(!drawing) return;
+    drawing = false;
+    sandboxLog("手势检测：流结束，送入内核匹配");
+    setSandboxStatus("内核分析中...");
+
+    setTimeout(()=>{
+        let result = detectGesture(path);
+        setSandboxStatus(result);
+        sandboxLog("映射执行：" + result);
+        path = [];
+        drawPath();
+    }, 400);
+}
+
+canvas.addEventListener("mousedown", startGesture);
+canvas.addEventListener("mousemove", moveGesture);
+window.addEventListener("mouseup", endGesture);
+
+canvas.addEventListener("touchstart", startGesture);
+canvas.addEventListener("touchmove", moveGesture);
+canvas.addEventListener("touchend", endGesture);
+
+function detectGesture(p){
+    if(p.length < 5) return "局部微动";
+    if(p.length < 12) return "双击操作 → 播放 与 暂停";
+
+    let dy = p[p.length-1].y - p[0].y;
+    let dx = p[p.length-1].x - p[0].x;
+
+    if(Math.abs(dy) > Math.abs(dx)){
+        if(dy < -30) return "上滑 → 接听电话 与 音量增加";
+        if(dy > 30) return "下滑 → 挂断电话 与 音量减少";
+    } else {
+        if(dx > 30) return "向虎口方向内滑 → 下一首";
+        if(dx < -30) return "向指尖方向外滑 → 上一首";
+    }
+
+    return "待机状态";
+}
+
+function clearSandboxLog(){
+    document.getElementById("sandboxLog").innerHTML = "";
+    sandboxLog("系统日志已复位");
+}
+
+setSandboxStatus("系统就绪");
+sandboxLog("测试沙盒微内核环境初始化完成");
+</script>
+
+</body>
+</html>
